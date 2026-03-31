@@ -9,7 +9,7 @@ import { setOdooRuntime } from "./runtime.ts";
 import { setRpcLogger } from "./rpc.ts";
 
 const plugin = {
-  id: "odoo-tools",
+  id: "odooClaw",
   name: "Odoo ERP Tools + Channel",
   description: "Odoo ERP API tool with AI skill and configurable channel integration (Discuss, Helpdesk, etc.)",
   configSchema: emptyPluginConfigSchema(),
