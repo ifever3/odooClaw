@@ -1,11 +1,11 @@
 ---
-name: odoo-api
+name: odooClaw-skill
 description: |
-  MANDATORY for ALL business data questions. Call the odoo_api tool for:
+  MANDATORY for ALL business data questions. Call the odooClaw-tool tool for:
   sales orders, purchases, invoices, inventory, contacts, products, employees, CRM leads.
   Trigger keywords: how many, count, list, find, check, total, summary, report.
   Also trigger when System message contains "Odoo DM from" or "Odoo message in".
-  NEVER tell the user to check Odoo manually — always call odoo_api first.
+  NEVER tell the user to check Odoo manually — always call odooClaw-tool first.
   IMPORTANT: Always respond in the same language as the user's query.
 metadata:
   openclaw:
@@ -16,18 +16,21 @@ metadata:
 
 # Odoo ERP Query
 
-**CRITICAL RULE**: When the user asks about ANY business data (sales, purchases, inventory, invoices, contacts, products, employees, CRM), you MUST call the `odoo_api` tool IMMEDIATELY. Do NOT say you cannot access the system. Do NOT suggest the user check Odoo manually. Do NOT hallucinate results — call the tool and report what it returns.
+**CRITICAL RULE**: When the user asks about ANY business data (sales, purchases, inventory, invoices, contacts, products, employees, CRM), you MUST call the `odooClaw-tool` tool IMMEDIATELY. Do NOT say you cannot access the system. Do NOT suggest the user check Odoo manually. Do NOT hallucinate results — call the tool and report what it returns.
 
-Also call `odoo_api` when a System message contains "Odoo DM from" or "Odoo message in".
+Also call `odooClaw-tool` when a System message contains "Odoo DM from" or "Odoo message in".
 
-## How to Call `odoo_api`
+## How to Call `odooClaw-tool`
 
 ### Count records
 ```json
 {
   "model": "sale.order",
   "method": "search_count",
-  "args": [[["create_date", ">=", "2026-03-01"], ["create_date", "<", "2026-04-01"]]]
+  "args": [[[ 
+    ["create_date", ">=", "2026-03-01"],
+    ["create_date", "<", "2026-04-01"]
+  ]]]
 }
 ```
 
@@ -36,7 +39,10 @@ Also call `odoo_api` when a System message contains "Odoo DM from" or "Odoo mess
 {
   "model": "sale.order",
   "method": "search_read",
-  "args": [[["create_date", ">=", "2026-03-01"], ["create_date", "<", "2026-04-01"]]],
+  "args": [[[ 
+    ["create_date", ">=", "2026-03-01"],
+    ["create_date", "<", "2026-04-01"]
+  ]]],
   "kwargs": { "fields": ["name", "partner_id", "amount_total", "state", "create_date"], "limit": 20, "order": "create_date desc" }
 }
 ```
@@ -75,7 +81,7 @@ Also call `odoo_api` when a System message contains "Odoo DM from" or "Odoo mess
 
 ## Domain Filter Syntax
 
-- `[["field", "operator", value]]` — operators: `=`, `!=`, `>`, `>=`, `<`, `<=`, `in`, `not in`, `like`, `ilike`
+- `["field", "operator", value]` — operators: `=`, `!=`, `>`, `>=`, `<`, `<=`, `in`, `not in`, `like`, `ilike`
 - AND (default): `[["state", "=", "done"], ["partner_id", "=", 5]]`
 - OR: `["|", ["state", "=", "draft"], ["state", "=", "sent"]]`
 
@@ -86,6 +92,6 @@ Also call `odoo_api` when a System message contains "Odoo DM from" or "Odoo mess
 
 ## Rules
 
-- Call `odoo_api` first, then present results. No preamble.
+- Call `odooClaw-tool` first, then present results. No preamble.
 - Always specify `fields` in kwargs. Use `limit` (10–20) and `order`.
-- If `odoo_api` returns an error, report the specific error. Never say you cannot access the system.
+- If `odooClaw-tool` returns an error, report the specific error. Never say you cannot access the system.

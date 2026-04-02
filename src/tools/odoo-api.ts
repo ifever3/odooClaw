@@ -8,13 +8,13 @@ export function registerOdooApiTool(api: ClawdbotPluginApi) {
   const log = api.logger;
 
   if (!api.registerTool) {
-    log?.error("[odoo_api] ❌ api.registerTool is undefined — tool will NOT be available");
+    log?.error("[odooClaw-tool] api.registerTool is undefined — tool will NOT be available");
     return;
   }
 
   const toolFactory = (_ctx: any) => {
     return {
-      name: "odoo_api",
+      name: "odooClaw-tool",
       label: "Odoo API",
       description:
         "IMPORTANT: You MUST call this tool whenever the user asks about ANY business data from Odoo ERP. " +
@@ -48,11 +48,11 @@ export function registerOdooApiTool(api: ClawdbotPluginApi) {
 
         const cfg = getCfg(api);
         if (!cfg) {
-          log?.error("[odoo_api] Odoo not configured");
+          log?.error("[odooClaw-tool] Odoo not configured");
           return {
             content: [{ type: "text" as const, text: JSON.stringify({
               success: false,
-              error: "Odoo not configured. Check channels.odoo config (url, db, uid, password/apiKey, botPartnerId).",
+              error: "Odoo not configured. Check channels.odooClaw-channel config (url, db, uid, password/apiKey, botPartnerId).",
             }) }],
             details: {},
           };
@@ -69,7 +69,7 @@ export function registerOdooApiTool(api: ClawdbotPluginApi) {
           };
         } catch (err: any) {
           const lastError = err?.message || String(err);
-          log?.error(`[odoo_api] ${model}.${method} failed: ${lastError}`);
+          log?.error(`[odooClaw-tool] ${model}.${method} failed: ${lastError}`);
           // Return structured error as data (not thrown) so the AI can report it to the user
           return {
             content: [{ type: "text" as const, text: JSON.stringify({
@@ -83,6 +83,6 @@ export function registerOdooApiTool(api: ClawdbotPluginApi) {
       },
     };
   };
-  api.registerTool(toolFactory as any, { name: "odoo_api" });
+  api.registerTool(toolFactory as any, { name: "odooClaw-tool" });
 
 }

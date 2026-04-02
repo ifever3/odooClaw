@@ -13,14 +13,14 @@ import type { OdooConfig, MaybeWrappedOdooConfig } from "./rpc.ts";
  * - `ODOO_API_KEY`
  * - `ODOO_BOT_PARTNER_ID`
  * - `ODOO_PROVIDER`
- * - `ODOO_WEBHOOK_SECRET`
+ * - `ODOO_WEBHOOK_API_KEY`
  *
  * Auth: requires `url`, `db`, `uid`, (`password` | `apiKey`), `botPartnerId`.
  *
  * Returns `null` if the config is missing or incomplete.
  */
 export function getCfg(api: ClawdbotPluginApi): OdooConfig | null {
-  const raw = api.config?.channels?.odoo as MaybeWrappedOdooConfig | undefined;
+  const raw = api.config?.channels?.["odooClaw-channel"] as MaybeWrappedOdooConfig | undefined;
   const cfgFromPlugin = raw?.odoo?.url ? raw.odoo : (raw || {});
 
   const url = process.env.ODOO_URL || cfgFromPlugin.url || "";
@@ -30,7 +30,11 @@ export function getCfg(api: ClawdbotPluginApi): OdooConfig | null {
   const apiKey = process.env.ODOO_API_KEY || cfgFromPlugin.apiKey;
   const botPartnerId = process.env.ODOO_BOT_PARTNER_ID ? parseInt(process.env.ODOO_BOT_PARTNER_ID, 10) : cfgFromPlugin.botPartnerId || 0;
   const provider = process.env.ODOO_PROVIDER || cfgFromPlugin.provider;
-  const webhookSecret = process.env.ODOO_WEBHOOK_SECRET || cfgFromPlugin.webhookSecret;
+  const webhookApiKey = process.env.ODOO_WEBHOOK_API_KEY || cfgFromPlugin.webhookApiKey;
+  const webhookUrl =
+    process.env.ODOO_WEBHOOK_URL ||
+    cfgFromPlugin.webhookUrl ||
+    (url ? `${url.replace(/\/+$/, "")}/openclaw/webhook` : undefined);
 
   // All required fields must be present
   if (!url || !db || !uid || !botPartnerId) return null;
@@ -44,6 +48,7 @@ export function getCfg(api: ClawdbotPluginApi): OdooConfig | null {
     apiKey,
     botPartnerId,
     provider,
-    webhookSecret,
+    webhookApiKey,
+    webhookUrl,
   };
 }

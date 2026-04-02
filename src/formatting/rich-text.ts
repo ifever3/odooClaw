@@ -29,7 +29,7 @@ function escapeHtml(value: string): string {
 }
 
 function formatInlineMarkdown(text: string): string {
-  let s = escapeHtml(text);
+  let s = escapeHtml(text).replace(/\r?\n/g, "<br/>");
   s = s.replace(/`([^`]+)`/g, `<code style="${STYLES.inlineCode}">$1</code>`);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/__(.+?)__/g, "<strong>$1</strong>");
@@ -39,18 +39,53 @@ function formatInlineMarkdown(text: string): string {
 
 function getNoticeStyle(text: string): string | null {
   const lower = text.toLowerCase();
-  if (/^(✅|🎉|🟢)/.test(text) || /success|completed|created|confirmed|成功|完成|已创建|已确认/i.test(lower)) {
+  if (/^(✅|🎉|🟢)/.test(text) || /success|completed|created|confirmed/i.test(lower)) {
     return "background:#ecfdf3;border-left:4px solid #16a34a;";
   }
-  if (/^(⚠️|⚠)/.test(text) || /reminder|notice|warning|提醒|注意|警告/i.test(lower)) {
+  if (/^(⚠️|⚠)/.test(text) || /reminder|notice|warning/i.test(lower)) {
     return "background:#fffbeb;border-left:4px solid #d97706;";
   }
-  if (/^(❌)/.test(text) || /error|failure|exception|错误|失败|异常/i.test(lower)) {
+  if (/^(❌)/.test(text) || /error|failure|exception/i.test(lower)) {
     return "background:#fef2f2;border-left:4px solid #dc2626;";
   }
-  if (/^(ℹ️)/.test(text) || /tip|description|information|提示|说明|信息/i.test(lower)) {
+  if (/^(ℹ️)/.test(text) || /tip|description|information/i.test(lower)) {
     return "background:#eff6ff;border-left:4px solid #2563eb;";
   }
+  return null;
+}
+
+function classifyHeadingEmoji(text: string): string | null {
+  const trimmed = stripLeadingEmoji(text);
+  if (!trimmed) return null;
+  if (/^[\p{Extended_Pictographic}\uFE0F\u200D]+/u.test(trimmed)) return null;
+
+  const lower = trimmed.toLowerCase();
+  if (/error/i.test(lower)) return "❌";
+  if (/warning/i.test(lower)) return "⚠️";
+  if (/success|completed|created|confirmed/i.test(lower)) return "✅";
+  if (/list|search|show/i.test(lower)) return "🔎";
+  if (/purchase|rfq|po/i.test(lower)) return "📦";
+  if (/sale order|\bso\b/i.test(lower)) return "🧾";
+  if (/invoice|bill/i.test(lower)) return "💰";
+  if (/partner|supplier|vendor/i.test(lower)) return "👤";
+  if (/summary|conclusion|takeaway|overall|overview/i.test(lower)) return "📌";
+  if (/analysis|breakdown|distribution|trend/i.test(lower)) return "📊";
+  if (/amount|price|cost|money|value/i.test(lower)) return "💰";
+  if (/time|date|timeline/i.test(lower)) return "🕒";
+  if (/risk|attention|notice/i.test(lower)) return "⚠️";
+  if (/next|recommend|suggest/i.test(lower)) return "💡";
+
+  if(/[\u4e00-\u9fff]/u.test(trimmed)) {
+    if (/[\u603b\u7ed3\u6982\u51b5\u6982\u89c8\u6458\u8981\u6c47\u603b\u5206\u6790\u5206\u5e03\u8d8b\u52bf\u62c6\u89e3]/u.test(trimmed)) return "📊";
+    if (/[\u4f9b\u5e94\u5546\u5ba2\u6237\u7ecf\u9500\u7ecf\u7406]/u.test(trimmed)) return "👤";
+    if (/[\u91d1\u989d\u4ef7\u683c\u6210\u672c\u6536\u5165\u652f\u51fa]/u.test(trimmed)) return "💰";
+    if (/[\u65f6\u95f4\u65e5\u671f\u6d41\u7a0b]/u.test(trimmed)) return "🕒";
+    if (/[\u98ce\u9669\u8b66\u544a\u6ce8\u610f\u5f85\u5904\u7406]/u.test(trimmed)) return "⚠️";
+    if (/[\u5efa\u8bae\u4e0b\u4e00\u6b65\u540e\u7eed\u8ba1\u5212]/u.test(trimmed)) return "💡";
+    if (/[\u5982\u4e0b\u6240\u793a\u5168\u90e8\u5168\u4f53\u5171\u8ba1\u5408\u8ba1\u603b\u5171]/u.test(trimmed) || /共\s*\d+/u.test(trimmed)) return "📊";
+    return "📌";
+  }
+
   return null;
 }
 
@@ -58,92 +93,34 @@ function guessEmojiTitle(text: string): { emoji: string; title: string } | null 
   const first = text.split(/\r?\n/).map((s) => s.trim()).find(Boolean) || "";
   if (!first) return null;
 
-  const lowerText = text.toLowerCase();
-  const lowerFirst = first.toLowerCase();
-
-  if (/error|错误/i.test(lowerFirst)) return { emoji: "❌", title: first.replace(/^(❌)/, "").trim() };
-  if (/warning|警告/i.test(lowerFirst)) return { emoji: "⚠️", title: first.replace(/^(⚠️|⚠)/, "").trim() };
-  if (/purchase|rfq|po|采购|订单/i.test(lowerText)) return { emoji: "📦", title: first };
-  if (/sale order|\bso\b|销售/i.test(lowerText)) return { emoji: "🧾", title: first };
-  if (/invoice|bill|发票|账单/i.test(lowerText)) return { emoji: "💰", title: first };
-  if (/partner|supplier|vendor|联系人|供应商|客户/i.test(lowerText)) return { emoji: "👤", title: first };
-  if (/success|成功/i.test(lowerFirst)) return { emoji: "✅", title: first };
-  if (/list|search|show|查询|列表|显示/i.test(lowerFirst)) return { emoji: "🔎", title: first };
-  return { emoji: "✨", title: first };
+  const emoji = classifyHeadingEmoji(first);
+  if (!emoji) return null;
+  return { emoji, title: first };
 }
 
-function parseKeyValueLine(line: string): { key: string; value: string } | null {
-  const m = line.match(/^\s*(?:[-*•]\s*)?(?:\*\*)?([^:：]{1,24}?)(?:\*\*)?\s*[:：]\s*(.+)\s*$/);
-  if (!m) return null;
-  const key = m[1].trim();
-  const value = m[2].trim();
-  if (!key || !value) return null;
-  if (/^(http|https):\/\//i.test(key)) return null;
-  return { key, value };
+function stripLeadingEmoji(text: string): string {
+  return text.replace(/^[\p{Extended_Pictographic}\uFE0F\u200D]+\s*/u, "").trim();
 }
 
-function looksLikeDivider(line: string): boolean {
-  return /^[-=]{3,}$/.test(line.trim());
+function shouldPromoteStandaloneHeading(line: string): boolean {
+  if (!line) return false;
+  if (line.length > 24) return false;
+  if (/[。！？.!?：:]$/.test(line)) return false;
+  if (/^[-*]|^\d+[.)]\s+/.test(line)) return false;
+  if (/^\|.+\|$/.test(line)) return false;
+  if (/^[#>]/.test(line)) return false;
+  if (!/[\u4e00-\u9fff]/u.test(line) && !/^[A-Za-z][A-Za-z\s/&-]*$/.test(line)) return false;
+  return true;
 }
 
-function parseListHeader(line: string): string | null {
-  const trimmed = line.trim();
-  const numbered = trimmed.match(/^\d+[.)]\s+(.+)$/);
-  if (numbered) return numbered[1].trim();
-  const bulleted = trimmed.match(/^[-*]\s+(.+)$/);
-  if (bulleted) return bulleted[1].trim();
-  return null;
-}
+function decorateHeadingText(text: string, level: number): string {
+  const trimmed = stripLeadingEmoji(text);
+  if (!trimmed) return text;
+  if (level >= 3) return trimmed;
 
-function tryBuildRecordTable(src: string[], startIndex: number): { lines: string[]; nextIndex: number } | null {
-  const records: Array<{ title: string; fields: Record<string, string> }> = [];
-  let i = startIndex;
-
-  while (i < src.length) {
-    while (i < src.length && !src[i].trim()) i += 1;
-    if (i >= src.length) break;
-
-    const title = parseListHeader(src[i]);
-    if (!title) break;
-    i += 1;
-
-    const fields: Record<string, string> = {};
-    while (i < src.length) {
-      const line = src[i].trim();
-      if (!line) {
-        i += 1;
-        break;
-      }
-      if (parseListHeader(line)) break;
-      const kv = parseKeyValueLine(line);
-      if (!kv) break;
-      fields[kv.key] = kv.value;
-      i += 1;
-    }
-
-    if (Object.keys(fields).length < 2) break;
-    records.push({ title, fields });
-  }
-
-  if (records.length < 2) return null;
-
-  const keyOrder: string[] = [];
-  for (const record of records) {
-    for (const key of Object.keys(record.fields)) {
-      if (!keyOrder.includes(key)) keyOrder.push(key);
-    }
-  }
-  const usefulKeys = keyOrder.filter((key) => records.filter((r) => r.fields[key]).length >= 2).slice(0, 5);
-  if (usefulKeys.length < 2) return null;
-
-  const tableLines = [
-    `| Item | ${usefulKeys.join(" | ")} |`,
-    `| ${["---", ...usefulKeys.map(() => "---")].join(" | ")} |`,
-    ...records.map((record) => `| ${record.title} | ${usefulKeys.map((key) => record.fields[key] || "-").join(" | ")} |`),
-    "",
-  ];
-
-  return { lines: tableLines, nextIndex: i };
+  const emoji = classifyHeadingEmoji(trimmed);
+  if (emoji) return `${emoji} ${trimmed}`;
+  return trimmed;
 }
 
 function isMarkdownTable(lines: string[], index: number): boolean {
@@ -172,6 +149,51 @@ function markdownTableToHtml(lines: string[], index: number): { html: string; ne
     html: `<div style="${STYLES.tableWrapper}"><table style="${STYLES.table}"><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`,
     nextIndex: i,
   };
+}
+
+function looksLikeDivider(line: string): boolean {
+  const normalized = line.replace(/\s+/g, "");
+  return /^(?:[-*_])\1{2,}$/.test(normalized) || /^(?:=){3,}$/.test(normalized);
+}
+
+function parseKeyValueLine(line: string): { key: string; value: string } | null {
+  const match = line.match(/^([^:\n]{1,80}?)[\s]*[:=：][\s]*(.+)$/);
+  if (!match) return null;
+
+  const key = match[1].trim();
+  const value = match[2].trim();
+  if (!key || !value) return null;
+  if (/^[-*]\s+/.test(key) || /^\d+[.)]\s+/.test(key) || /^#/.test(key)) return null;
+  return { key, value };
+}
+
+function renderKvRows(rows: Array<{ key: string; value: string }>): string[] {
+  return [
+    "| Field | Value |",
+    "| --- | --- |",
+    ...rows.map((row) => `| ${row.key} | ${row.value} |`),
+  ];
+}
+
+function tryBuildRecordTable(lines: string[], index: number): { lines: string[]; nextIndex: number } | null {
+  const rows: Array<{ key: string; value: string }> = [];
+  let i = index;
+
+  while (i < lines.length) {
+    const raw = (lines[i] || "").trim();
+    if (!raw) break;
+    if (looksLikeDivider(raw) || isMarkdownTable(lines, i) || /^#{1,6}\s+/.test(raw) || /^[-*]\s+/.test(raw) || /^\d+[.)]\s+/.test(raw)) {
+      break;
+    }
+
+    const parsed = parseKeyValueLine(raw);
+    if (!parsed) break;
+    rows.push(parsed);
+    i += 1;
+  }
+
+  if (rows.length < 2) return null;
+  return { lines: renderKvRows(rows), nextIndex: i };
 }
 
 /* ── Preprocessing ── */
@@ -238,35 +260,32 @@ function preprocessForOdooRichText(text: string): string {
       j += 1;
     }
     if (kvRows.length >= 2) {
-      out.push("| Field | Value |", "| --- | --- |");
-      for (const row of kvRows) {
-        out.push(`| ${row.key} | ${row.value} |`);
-      }
-      out.push("");
+      out.push(...renderKvRows(kvRows), "");
       i = j;
       continue;
     }
 
     const numbered = line.match(/^(\d+)[.)]\s+(.+)$/);
     if (numbered) {
-      out.push(`${numbered[1]}. ${numbered[2]}`);
-      i += 1;
-      continue;
-    }
-
-    if (/^[-*]\s+/.test(line)) {
-      const body = line.replace(/^[-*]\s+/, "");
-      if (!/^(✅|📌|👉|🔹|▫️|•)/.test(body)) {
-        out.push(`- 👉 ${body}`);
+      const nextLine = (src[i + 1] || "").trim();
+      if (nextLine && /^[-*]\s+/.test(nextLine)) {
+        out.push(`### ${numbered[2]}`);
       } else {
-        out.push(`- ${body}`);
+        out.push(`${numbered[1]}. ${numbered[2]}`);
       }
       i += 1;
       continue;
     }
 
-    if (/^(Next|You can also|Next step|Can continue|Can execute|下一步|你也可以|后续操作)/i.test(line)) {
-      out.push(`### 👉 ${line}`);
+    if (/^[-*]\s+/.test(line)) {
+      const body = line.replace(/^[-*]\s+/, "").trim();
+      out.push(`- ${body}`);
+      i += 1;
+      continue;
+    }
+
+    if (/^(Next|You can also|Next step|Can continue|Can execute|Follow-up|Recommended next step)/i.test(line)) {
+      out.push(`### ${line}`);
       i += 1;
       continue;
     }
@@ -304,13 +323,23 @@ export function formatOdooRichText(text: string): string {
       continue;
     }
 
+    const h4 = line.match(/^####\s+(.+)$/);
     const h3 = line.match(/^###\s+(.+)$/);
     const h2 = line.match(/^##\s+(.+)$/);
     const h1 = line.match(/^#\s+(.+)$/);
-    if (h3 || h2 || h1) {
-      const textValue = h3?.[1] || h2?.[1] || h1?.[1] || line;
-      const size = h1 ? 20 : h2 ? 18 : 16;
-      parts.push(`<div style="${STYLES.heading(size)}">${formatInlineMarkdown(textValue)}</div>`);
+    if (h4 || h3 || h2 || h1) {
+      const textValue = h4?.[1] || h3?.[1] || h2?.[1] || h1?.[1] || line;
+      const level = h1 ? 1 : h2 ? 2 : h3 ? 3 : 4;
+      const decoratedText = decorateHeadingText(textValue, level);
+      const size = h1 ? 20 : h2 ? 18 : h3 ? 16 : 15;
+      parts.push(`<div style="${STYLES.heading(size)}">${formatInlineMarkdown(decoratedText)}</div>`);
+      i += 1;
+      continue;
+    }
+
+    if (shouldPromoteStandaloneHeading(line)) {
+      const decoratedText = decorateHeadingText(line, 2);
+      parts.push(`<div style="${STYLES.heading(18)}">${formatInlineMarkdown(decoratedText)}</div>`);
       i += 1;
       continue;
     }
@@ -336,6 +365,7 @@ export function formatOdooRichText(text: string): string {
     }
 
     const block: string[] = [line];
+
     i += 1;
     while (i < lines.length) {
       const next = (lines[i] || "").trim();
@@ -344,7 +374,7 @@ export function formatOdooRichText(text: string): string {
       i += 1;
     }
 
-    const joined = block.join("<br/>");
+    const joined = block.join("\n");
     const noticeStyle = block.length === 1 ? getNoticeStyle(block[0]) : null;
     if (noticeStyle) {
       parts.push(`<div style="${STYLES.notice(noticeStyle)}">${formatInlineMarkdown(joined)}</div>`);
