@@ -71,6 +71,13 @@ function summarizeAttachments(attachments: WebhookAttachment[] | undefined): str
     lines.push(`  URL: ${attachment.url}`);
   }
 
+  lines.push("");
+  lines.push("Attachment handling rules:");
+  lines.push("- Prefer analyzing attachments directly from their URLs.");
+  lines.push("- Download temporarily only when direct URL analysis is not possible.");
+  lines.push("- Delete any temporary file immediately after analysis.");
+  lines.push("- Do not retain attachment caches or local copies.");
+
   return lines.join("\n");
 }
 
@@ -300,16 +307,6 @@ async function handleInboundMessage(
     sender: { name: authorName, id: authorId },
   });
 
-  const attachmentHints = msg.attachments?.some((attachment) => attachment?.url)
-    ? [
-        "Attachment handling rules:",
-        "- Prefer analyzing attachments directly from their URLs.",
-        "- Download temporarily only when direct URL analysis is not possible.",
-        "- Delete any temporary file immediately after analysis.",
-        "- Do not retain attachment caches or local copies.",
-      ].join("\n")
-    : undefined;
-
   const ctxPayload = core.channel.reply.finalizeInboundContext({
     Body: body,
     RawBody: bodyText,
@@ -332,7 +329,6 @@ async function handleInboundMessage(
       filename: attachment.filename,
       url: attachment.url,
     })),
-    AttachmentHandlingRules: attachmentHints,
     HasAttachments: Boolean(msg.attachments?.some((attachment) => attachment?.url)),
     OriginatingChannel: "odooClaw-channel",
     OriginatingTo: to,
