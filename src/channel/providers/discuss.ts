@@ -46,6 +46,7 @@ export const discussProvider: ChannelProvider = {
     const payload = buildReplyWebhook(cfg, channelId, text, isHtml);
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      "X-Odoo-Database": cfg.db,
     };
     if (cfg.webhookApiKey) {
       headers["x-api-key"] = cfg.webhookApiKey;
