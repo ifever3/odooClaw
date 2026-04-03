@@ -74,6 +74,7 @@ function summarizeAttachments(attachments: WebhookAttachment[] | undefined): str
   lines.push("");
   lines.push("Attachment handling rules:");
   lines.push("- Prefer analyzing attachments directly from their URLs.");
+  lines.push("- The connection may require the X-Odoo-Database header.");
   lines.push("- Download temporarily only when direct URL analysis is not possible.");
   lines.push("- Delete any temporary file immediately after analysis.");
   lines.push("- Do not retain attachment caches or local copies.");
