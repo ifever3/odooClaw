@@ -72,12 +72,8 @@ function summarizeAttachments(attachments: WebhookAttachment[] | undefined): str
   }
 
   lines.push("");
-  lines.push("Attachment handling rules:");
+  lines.push("For attachments: download to a temporary folder in the workspace, fully unpack and analyze them, then delete the temporary files immediately. Leave no cache behind.");
   lines.push("- The connection may require the X-Odoo-Database header.");
-  lines.push("- This is an Odoo attachment URL. Try direct access first;");
-  lines.push("- If localhost or access restrictions prevent that, temporarily download it to inspect.");
-  lines.push("- Delete any temporary file immediately after analysis.");
-  lines.push("- Do not retain attachment caches or local copies.");
 
   return lines.join("\n");
 }
