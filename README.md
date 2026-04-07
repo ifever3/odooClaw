@@ -40,7 +40,7 @@ OdooClaw 是一个面向 OpenClaw 的 Odoo 插件包，把 **tool、skill、chan
         "uid": 2,
         "password": "your-password",
         "botPartnerId": 3,
-        "webhookUrl": "https://your-odoo.com/openclaw/webhook",
+        "webhookUrl": "https://your-odoo.com/your-claw/webhook",
         "webhookApiKey": "your-shared-api-key"
       }
     }
@@ -70,5 +70,5 @@ OdooClaw 是一个面向 OpenClaw 的 Odoo 插件包，把 **tool、skill、chan
 
 - 插件未加载：确认扩展目录里是整个仓库，而不是单个文件
 - `odooClaw-skill` 不显示：确认 OpenClaw 读到的是当前这份扩展目录
-- Odoo 收不到回复：检查 webhook API key 和 `/openclaw/webhook`
+- Odoo 收不到回复：检查 webhook API key 和 `/your-claw/webhook`
 - 回复内容没渲染成富文本：确认发送时走的是 HTML
