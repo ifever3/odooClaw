@@ -24,6 +24,8 @@ export interface OdooConfig {
   webhookUrl?: string;
   /** Channel provider id — defaults to "discuss" when omitted. */
   provider?: string;
+  allowedSourceIps: string[];
+  trustedProxyIps: string[];
 }
 
 /** Raw config shape before validation — all fields optional. */
@@ -35,6 +37,8 @@ export interface RawOdooConfig {
   botPartnerId?: number;
   webhookUrl?: string;
   provider?: string;
+  allowedSourceIps?: string[];
+  trustedProxyIps?: string[];
 }
 
 export type MaybeWrappedOdooConfig = RawOdooConfig & { odoo?: RawOdooConfig };

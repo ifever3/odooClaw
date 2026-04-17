@@ -31,6 +31,12 @@ export function getCfg(api: ClawdbotPluginApi): OdooConfig | null {
     process.env.ODOO_WEBHOOK_URL ||
     cfgFromPlugin.webhookUrl ||
     (url ? `${url.replace(/\/+$/, "")}/openclaw/webhook` : undefined);
+  const allowedSourceIps = Array.isArray(cfgFromPlugin.allowedSourceIps)
+    ? cfgFromPlugin.allowedSourceIps.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    : [];
+  const trustedProxyIps = Array.isArray(cfgFromPlugin.trustedProxyIps)
+    ? cfgFromPlugin.trustedProxyIps.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+    : [];
 
   // All required fields must be present
   if (!url || !db || !uid || !botPartnerId) return null;
@@ -44,5 +50,7 @@ export function getCfg(api: ClawdbotPluginApi): OdooConfig | null {
     botPartnerId,
     provider,
     webhookUrl,
+    allowedSourceIps,
+    trustedProxyIps,
   };
 }

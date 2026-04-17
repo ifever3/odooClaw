@@ -1,4 +1,4 @@
-import { emptyPluginConfigSchema } from "openclaw/plugin-sdk";
+import { Type } from "@sinclair/typebox";
 
 import { getCfg } from "./config.ts";
 import { handleOdooWebhookRequest, registerWebhookService, odooClawChannel } from "./channel/index.ts";
@@ -11,7 +11,29 @@ const plugin = {
   id: "odooClaw",
   name: "OdooClaw",
   description: "Odoo ERP API tool with AI skill and configurable channel integration (Discuss, Helpdesk, etc.)",
-  configSchema: emptyPluginConfigSchema(),
+  configSchema: Type.Object({
+    channels: Type.Optional(
+      Type.Object({
+        "odooClaw-channel": Type.Optional(
+          Type.Object({
+            odoo: Type.Optional(
+              Type.Object({
+                url: Type.Optional(Type.String()),
+                db: Type.Optional(Type.String()),
+                uid: Type.Optional(Type.Number()),
+                apiKey: Type.Optional(Type.String()),
+                botPartnerId: Type.Optional(Type.Number()),
+                webhookUrl: Type.Optional(Type.String()),
+                provider: Type.Optional(Type.String()),
+                allowedSourceIps: Type.Optional(Type.Array(Type.String())),
+                trustedProxyIps: Type.Optional(Type.Array(Type.String())),
+              }),
+            ),
+          }),
+        ),
+      }),
+    ),
+  }),
 
   register(api: any) {
     setOdooRuntime(api.runtime);
